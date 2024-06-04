@@ -44,6 +44,14 @@ export type AzureSqlServerExecResults = {
   all_exec_results: AzureSqlServerExecResult[]
 }
 
+export type ContentItem = {
+  type: string
+  text?: string
+  image_url?: {
+    url: string
+  }
+}
+
 export type ChatMessage = {
   id: string
   role: string

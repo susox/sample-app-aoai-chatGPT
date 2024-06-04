@@ -30,7 +30,8 @@ import {
   CosmosDBStatus,
   ErrorMessage,
   ExecResults,
-  AzureSqlServerCodeExecResult
+  AzureSqlServerCodeExecResult,
+  ContentItem
 } from "../../api";
 import { Answer } from "../../components/Answer";
 import { QuestionInput } from "../../components/QuestionInput";
@@ -164,10 +165,14 @@ const Chat = () => {
     const abortController = new AbortController()
     abortFuncs.current.unshift(abortController)
 
+    const contentData = JSON.parse(question);
+    //TODO :: this was only implemented for makeApiRequestWithoutCosmosDB
+    //TODO :: implement similar solutions for makeApiRequestWithCosmosDB
+
     const userMessage: ChatMessage = {
       id: uuid(),
       role: 'user',
-      content: question,
+      content: contentData.content,
       date: new Date().toISOString()
     }
 
@@ -731,6 +736,35 @@ const Chat = () => {
     )
   }
 
+  const getUserMessageContentText = (userMessage: string): string => {
+    // The new user message includes now images which means the content property is not just a string
+    // The new format of this "content" element of the message follows this structure:
+    // [
+    //   {
+    //     "type": "text",
+    //     "text": "{some text}"
+    //   },
+    //   {
+    //     "type": "image_url",
+    //     "image_url": {
+    //       "url": "data:image/jpeg;base64,{base64 image}"
+    //     }
+    //   }
+    //   ...
+    //   {
+    //     "type": "image_url",
+    //     "image_url": {
+    //       "url": "data:image/jpeg;base64,{another base64 image}"
+    //     }
+    //   }
+    // ]
+    // TODO: add the images in the chat message (chat bubble) for a better chat context
+    const textMessage: ContentItem[] = JSON.parse(JSON.stringify(userMessage))
+    
+    // Extract the content item text for the user message
+    return textMessage.find((item: ContentItem) => item.type === 'text')?.text || ''
+  }
+
   return (
     <div className={styles.container} role="main">
       {showAuthMessage ? (
@@ -775,7 +809,7 @@ const Chat = () => {
                   <>
                     {answer.role === 'user' ? (
                       <div className={styles.chatMessageUser} tabIndex={0}>
-                        <div className={styles.chatMessageUserMessage}>{answer.content}</div>
+                        <div className={styles.chatMessageUserMessage}>{getUserMessageContentText(answer.content)}</div>
                       </div>
                     ) : answer.role === 'assistant' ? (
                       <div className={styles.chatMessageGpt}>

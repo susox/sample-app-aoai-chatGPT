@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'rx-recognition-east-us'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C12E8CC51C0B4AEE9EE0D5D7AFB0936C }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E3A3BE06138C4BF0A05E6107DABE96D0 }}

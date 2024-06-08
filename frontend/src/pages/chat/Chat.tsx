@@ -762,11 +762,21 @@ const Chat = () => {
     //   }
     // ]
     // TODO: add the images in the chat message (chat bubble) for a better chat context
-    const textMessage: ContentItem[] = JSON.parse(JSON.stringify(userMessage))
+    const contentMessage: ContentItem[] = JSON.parse(JSON.stringify(userMessage))
     
     // Extract the content item text for the user message
-    return textMessage.find((item: ContentItem) => item.type === 'text')?.text || ''
+    return contentMessage.find((item: ContentItem) => item.type === 'text')?.text || ''
   }
+
+  const getUserMessageContentImages = (userMessage: string): string[] => {
+    // TODO: add the images in the chat message (chat bubble) for a better chat context
+    const contentMessage: ContentItem[] = JSON.parse(JSON.stringify(userMessage))
+    
+    // Extract and return the image URLs from the content
+    return contentMessage
+      .filter((item: ContentItem) => item.type === 'image_url')
+      .map((item: ContentItem) => item.image_url?.url || '');
+  };
 
   return (
     <div className={styles.container} role="main">
@@ -811,7 +821,7 @@ const Chat = () => {
                 {messages.map((answer, index) => (
                   <>
                     {answer.role === 'user' ? (
-                      <UserChatBubble message={getUserMessageContentText(answer.content)} />
+                      <UserChatBubble message={getUserMessageContentText(answer.content)} images={getUserMessageContentImages(answer.content)} />
                     ) : answer.role === 'assistant' ? (
                       <div className={styles.chatMessageGpt}>
                         <Answer

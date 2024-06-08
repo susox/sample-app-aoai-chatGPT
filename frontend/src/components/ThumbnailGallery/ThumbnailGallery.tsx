@@ -3,12 +3,13 @@ import styles from './ThumbnailGallery.module.css'
 
 interface ThumbnailGalleryProps {
   thumbnails: string[];
-  removeImage: (index: number) => void;
+  removeImage?: (index: number) => void;
+  showRemoveButton?: boolean;
 }
 
 //TODO :: make thumbnail open in a model to see the image in full-screen
 
-const ThumbnailGallery: React.FC<ThumbnailGalleryProps> = ({ thumbnails, removeImage }) => {
+const ThumbnailGallery: React.FC<ThumbnailGalleryProps> = ({ thumbnails, removeImage, showRemoveButton = true }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -30,9 +31,11 @@ const ThumbnailGallery: React.FC<ThumbnailGalleryProps> = ({ thumbnails, removeI
         {thumbnails.map((image, index) => (
           <div key={index} className={styles.thumbnailContainer}>
             <img src={image} alt={`Thumbnail ${index}`} className={styles.thumbnail} onClick={() => openModal(image)} />
-            <button className={styles.closeButton} onClick={() => removeImage(index)}>
-              &times;
-            </button>
+            {showRemoveButton && removeImage && (
+              <button className={styles.closeButton} onClick={() => removeImage(index)}>
+                &times;
+              </button>
+          )}
           </div>
         ))}
       </div>

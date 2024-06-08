@@ -40,6 +40,7 @@ import { QuestionInput } from "../../components/QuestionInput";
 import { ChatHistoryPanel } from "../../components/ChatHistory/ChatHistoryPanel";
 import { AppStateContext } from "../../state/AppProvider";
 import { useBoolean } from "@fluentui/react-hooks";
+import UserChatBubble from '../../components/UserChatBubble/UserChatBubble'
 
 const enum messageStatus {
   NotRunning = 'Not Running',
@@ -810,9 +811,7 @@ const Chat = () => {
                 {messages.map((answer, index) => (
                   <>
                     {answer.role === 'user' ? (
-                      <div className={styles.chatMessageUser} tabIndex={0}>
-                        <div className={styles.chatMessageUserMessage}>{getUserMessageContentText(answer.content)}</div>
-                      </div>
+                      <UserChatBubble message={getUserMessageContentText(answer.content)} />
                     ) : answer.role === 'assistant' ? (
                       <div className={styles.chatMessageGpt}>
                         <Answer

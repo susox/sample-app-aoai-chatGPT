@@ -67,7 +67,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
   }
 
   const sendQuestion = () => {
-    if (disabled || !question.trim()) {
+    if (disabled || (!question.trim() && thumbnails.length === 0)) {
       return
     }
 
@@ -118,8 +118,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     setQuestion(newValue || '')
   }
 
-  const sendQuestionDisabled = disabled || !question.trim()
-
+  const sendQuestionDisabled = disabled || (!question.trim() && thumbnails.length === 0)
   return (
        
       <Stack className={styles.questionInputContainer}>

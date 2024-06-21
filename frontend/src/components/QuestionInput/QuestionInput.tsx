@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Stack, TextField } from '@fluentui/react'
 import { SendRegular } from '@fluentui/react-icons'
-
+import { GlobalWorkerOptions, getDocument, version } from 'pdfjs-dist';
 import Send from '../../assets/Send.svg'
 import Upload from '../../assets/Attachment.svg'
-
 import styles from './QuestionInput.module.css'
 import ThumbnailGallery from '../ThumbnailGallery/ThumbnailGallery'
-
 
 interface Props {
   onSend: (question: string, id?: string) => void
@@ -31,22 +29,53 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
       const objectUrl = URL.createObjectURL(selectedFile)
 
-      var reader = new FileReader();
-      reader.readAsDataURL(selectedFile); 
-      reader.onloadend = function() {
-        setBase64(reader.result)
+      if (selectedFile.type === 'application/pdf') {
+        renderPdfToImages(selectedFile)
+      } else {
+        var reader = new FileReader();
+        reader.readAsDataURL(selectedFile); 
+        reader.onloadend = function() {
+          setBase64(reader.result)
+        }
       }
+      
       // free memory when ever this component is unmounted
       return () => URL.revokeObjectURL(objectUrl)
   }, [selectedFile])
 
   useEffect(() => {
     if (base64) {
-      //TODO :: sometiems the image does not get added and the thumbnail gallery is not shown
+      //TODO :: sometiems the image does not get added and the thumbnail gallery is not shown (maybe related to the clean history chat)
       addImage(base64.toString());
       setBase64(null);
     }
   }, [base64]);
+
+  const renderPdfToImages = async (file: File) => {
+    // Set the workerSrc to the relative URL of the worker script
+    GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.mjs`;
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
+
+    reader.onload = async function () {
+      const pdfData = new Uint8Array(reader.result as ArrayBuffer);
+      
+      const pdf = await getDocument({ data: pdfData }).promise;
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 3 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d')!;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        const imageData = canvas.toDataURL('image/png');
+        addImage(imageData);
+      }
+    };
+  };
 
   const addImage = (image: string) => {
     setThumbnails([...thumbnails, image]);
@@ -150,7 +179,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
               id="file-input"
               className={styles.questionInputFile}
               type="file"
-              accept="image/*"
+              accept="image/*,application/pdf"
               onChange={onSelectFile}
             />
           </div>
